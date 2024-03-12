@@ -1,4 +1,4 @@
-package kvpair;
+package datastore;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +19,14 @@ public class SynchMap {
             return Optional.of( kvpair.getValue() );
     }
 
+    public Optional<KVPair> getKVPair(String k) {
+        KVPair kvpair = kvMap.get(k);
+        if (kvpair == null)
+            return Optional.empty();
+        else
+            return Optional.of(kvpair);
+    }
+
     synchronized public void put(String k, String v) {
         KVPair kvpair = kvMap.get(k);
         if (kvpair == null) {
@@ -27,5 +35,9 @@ public class SynchMap {
         } else {
             kvpair.update(v);
         }
+    }
+
+    synchronized public void clear() {
+        kvMap.clear();
     }
 }

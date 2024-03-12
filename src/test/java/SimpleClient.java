@@ -18,8 +18,13 @@ public class SimpleClient {
         Socket socket = null;
         PrintWriter out = null;
         BufferedReader in = null;
+        int port = PORT;
         try {
-            socket = new Socket(URL, PORT);
+            port = Integer.parseInt(args[0]);
+        } catch (Exception ignore) { }
+        System.out.println("Client on port: " + port);
+        try {
+            socket = new Socket(URL, port);
             out = new PrintWriter( socket.getOutputStream(), true );
             in = new BufferedReader(
                     new InputStreamReader( socket.getInputStream() )

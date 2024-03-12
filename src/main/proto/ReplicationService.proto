@@ -1,0 +1,26 @@
+syntax = "proto3";
+option java_multiple_files = true;
+package replication;
+
+message KVPairRequest {
+  string key = 1;
+  string value = 2;
+  int32 version = 3;
+}
+message BooleanResponse {
+  bool equals = 1;
+}
+message KeyRequest {
+  string key = 1;
+}
+message KVPairResponse {
+  string key = 1;
+  string value = 2;
+  int32 version = 3;
+}
+
+service ReplicationService {
+  rpc isKeyValueEqual(KVPairRequest) returns (BooleanResponse);
+  rpc getKeyValue(KeyRequest) returns (KVPairResponse);
+  rpc putKeyValue(KVPairRequest) returns (BooleanResponse);
+}

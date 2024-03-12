@@ -1,10 +1,11 @@
 package server;
 
+import datastore.SynchMap;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import Client.Client;
+import client.Client;
 
 import java.util.*;
 
@@ -22,7 +23,7 @@ public class ClientHandlerAgentTest {
 
     @BeforeAll
     public static void setup() throws InterruptedException {
-        clientHandlerAgent = new ClientHandlerAgent(PORT, MAX_CLIENTS);
+        clientHandlerAgent = new ClientHandlerAgent(new SynchMap(), null, PORT, MAX_CLIENTS);
         clientHandlerThread = new Thread(() -> {
             clientHandlerAgent.run();
         });
