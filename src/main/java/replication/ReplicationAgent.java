@@ -25,15 +25,13 @@ public class ReplicationAgent {
         this.replicationPeers = new ArrayList<>();
     }
 
-    public boolean startGrpcServer() {
+    public void startGrpcServer() {
         try {
             grpcServer.start();
-            return true;
         } catch (IOException exception) {
             ErrorHandler.printException(
                     "ReplicationAgent", "Failed to start grpc server", exception
             );
-            return false;
         }
     }
 

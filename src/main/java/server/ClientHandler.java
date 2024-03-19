@@ -3,6 +3,7 @@ package server;
 import datastore.KVPair;
 import datastore.SynchMap;
 import replication.ReplicationAgent;
+import replication.ReplicationPeer;
 import utils.RequestParser;
 
 import java.io.BufferedReader;
@@ -51,17 +52,33 @@ public class ClientHandler implements Runnable {
     synchronized public void handlePutRequest(Map<String, String> requestMap) {
         final String key = requestMap.get("key");
         final String value = requestMap.get("value");
-        this.kvMap.put(key, value);
+        this.kvMap.commit(key, value);
         Optional<KVPair> kvPairOpt = this.kvMap.getKVPair(key);
         if (kvPairOpt.isEmpty()) {
             outputStream.println( RequestParser.parseMessageMap( Map.of("error", "Server-side Error") ) );
             throw new RuntimeException("Inconsistent Key-Value Map");
         }
-        this.replicationAgent.getReplicationPeers().forEach(peer -> {
-            peer.rpcPutKeyValue(
-                    kvPairOpt.get()
+        long commitOk = 0;
+        for (ReplicationPeer peer : this.replicationAgent.getReplicationPeers()) {
+            if ( peer.rpcCommitKeyValue(kvPairOpt.get()).isSuccess() ) {
+                commitOk++;
+            }
+        }
+//        long commitOk = this.replicationAgent.getReplicationPeers().stream().map(
+//                peer -> peer.rpcCommitKeyValue(kvPairOpt.get()).isSuccess()
+//        ).filter(result -> result).count();
+        if (commitOk >= this.replicationAgent.getReplicationPeers().size() / 2) {
+            this.kvMap.put(key, value);
+            this.replicationAgent.getReplicationPeers().forEach(
+                    peer -> peer.rpcPutKeyValue(kvPairOpt.get())
             );
-        });
+        } else {
+            this.kvMap.unCommit(key, value);
+            this.replicationAgent.getReplicationPeers().forEach(
+                    peer -> peer.rpcUnCommitKeyValue(kvPairOpt.get())
+            );
+        }
+
         outputStream.println( RequestParser.parseMessageMap( Map.of("result", "ok") ) );
     }
 

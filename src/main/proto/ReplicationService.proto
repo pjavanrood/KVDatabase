@@ -23,4 +23,6 @@ service ReplicationService {
   rpc isKeyValueEqual(KVPairRequest) returns (BooleanResponse);
   rpc getKeyValue(KeyRequest) returns (KVPairResponse);
   rpc putKeyValue(KVPairRequest) returns (BooleanResponse);
+  rpc commitKeyValue(KVPairRequest) returns (BooleanResponse);
+  rpc unCommitKeyValue(KVPairRequest) returns (BooleanResponse);
 }

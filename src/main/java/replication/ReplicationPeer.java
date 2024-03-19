@@ -55,6 +55,38 @@ public class ReplicationPeer {
         }
     }
 
+    public Result<Boolean> rpcCommitKeyValue(KVPair kvPair) {
+        try {
+            List<String> kvPairCast = kvPair.get();
+            BooleanResponse response = stub.commitKeyValue(
+                    KVPairRequest.newBuilder()
+                            .setKey(kvPairCast.get(0))
+                            .setValue(kvPairCast.get(1))
+                            .setVersion(Integer.parseInt(kvPairCast.get(2)))
+                            .build()
+            );
+            return Result.success(response.getEquals());
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
+    public Result<Boolean> rpcUnCommitKeyValue(KVPair kvPair) {
+        try {
+            List<String> kvPairCast = kvPair.get();
+            BooleanResponse response = stub.unCommitKeyValue(
+                    KVPairRequest.newBuilder()
+                            .setKey(kvPairCast.get(0))
+                            .setValue(kvPairCast.get(1))
+                            .setVersion(Integer.parseInt(kvPairCast.get(2)))
+                            .build()
+            );
+            return Result.success(response.getEquals());
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
+    }
+
     public Result<Boolean> rpcPutKeyValue(KVPair kvPair) {
         try {
             List<String> kvPairCast = kvPair.get();

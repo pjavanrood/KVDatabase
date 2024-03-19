@@ -13,11 +13,13 @@ public class KVPair {
     volatile private String value;
     volatile private int version;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    volatile private boolean committed;
 
     public KVPair(String key, String initialValue) {
         this.key = key;
         this.value = initialValue;
         this.version = 0;
+        this.committed = false;
     }
 
     public KVPair(String key, String initialValue, int version) {
@@ -30,20 +32,60 @@ public class KVPair {
         this.lock.writeLock().lock();
         this.value = newValue;
         this.version++;
+        this.committed = false;
         this.lock.writeLock().unlock();
     }
 
     public boolean update(String newValue, int version) {
         this.lock.writeLock().lock();
         boolean result = true;
-        if (version == this.version) {
+        if (version > this.version) {
             this.value = newValue;
-            this.version++;
+            this.version = version;
+            this.committed = false;
         } else {
             result = false;
         }
         this.lock.writeLock().unlock();
         return result;
+    }
+
+    public boolean commit(int version) {
+        this.lock.writeLock().lock();
+        boolean result = true;
+        if (!this.committed && version == this.version) {
+            this.committed = true;
+        } else {
+            result = false;
+        }
+        this.lock.writeLock().unlock();
+        return result;
+    }
+
+    public boolean commit() {
+        this.lock.writeLock().lock();
+        boolean result = true;
+        if (!this.committed) {
+            this.committed = true;
+        } else {
+            result = false;
+        }
+        this.lock.writeLock().unlock();
+        return result;
+    }
+
+    public void unCommit(int version) {
+        this.lock.writeLock().lock();
+        if (this.committed && version == this.version) {
+            this.committed = false;
+        }
+        this.lock.writeLock().unlock();
+    }
+
+    public void unCommit() {
+        this.lock.writeLock().lock();
+        this.committed = false;
+        this.lock.writeLock().unlock();
     }
 
     public List<String> get() {
@@ -70,17 +112,6 @@ public class KVPair {
         return result;
     }
 
-    public KVPairResponse getKeyValueResponse() {
-        this.lock.readLock().lock();
-        KVPairResponse response = KVPairResponse.newBuilder()
-                .setKey(key)
-                .setValue(value)
-                .setVersion(version)
-                .build();
-        this.lock.readLock().unlock();
-        return response;
-    }
-
     public boolean equalsKVPair(String key, String value, int version) {
         this.lock.readLock().lock();
         boolean result = key.equals(this.key) && value.equals(this.value) && version == this.version;
@@ -91,6 +122,13 @@ public class KVPair {
     public boolean checkVersion(int version) {
         this.lock.readLock().lock();
         boolean result = this.version == version;
+        this.lock.readLock().unlock();
+        return result;
+    }
+
+    public boolean checkCommitted() {
+        this.lock.readLock().lock();
+        boolean result = this.committed;
         this.lock.readLock().unlock();
         return result;
     }

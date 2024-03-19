@@ -18,10 +18,9 @@ public class SimpleClient {
         Socket socket = null;
         PrintWriter out = null;
         BufferedReader in = null;
-        int port = PORT;
-        try {
-            port = Integer.parseInt(args[0]);
-        } catch (Exception ignore) { }
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.nextLine();
+        int port = Integer.parseInt(input);
         System.out.println("Client on port: " + port);
         try {
             socket = new Socket(URL, port);
@@ -33,10 +32,9 @@ public class SimpleClient {
             ErrorHandler.printException("client", "Error Initializing socket", e );
             return;
         }
-        Scanner scanner = new Scanner(System.in);
         while ( true ) {
             System.out.println("> Request");
-            String input = scanner.nextLine();
+            input = scanner.nextLine();
             if ( input.equals("quit") ) {
                 break;
             } else {
