@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class SimpleClient {
-    private static String URL = "localhost";
+    private static final String URL = "localhost";
     private static final int PORT = 1010;
 
     public static void main(String[] args) {
